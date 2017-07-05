@@ -39,6 +39,7 @@
 			case 'upd':
 				$c = new Contact( $_POST );
 				$c->set( 'id', $_POST['id'] );
+
 				$message = $c->save()
 					? "Mise à jour effectuée avec succès !"
 					: "La mise à jour a échoué :/";
@@ -59,12 +60,26 @@
 
 
 
-
 	//-- Get contact and group lists
 
 	$bdd = new Database();
+	$gid =  $_GET['idgroup'];
 
-	$contacts = $bdd->getConnexion()->query('SELECT * FROM contacts;')->fetchAll();
+	if( isset($gid) )
+		$contacts = $bdd
+			->getConnexion()
+			->query('
+				SELECT * 
+				FROM contacts
+				JOIN appartenir ON contacts.id = appartenir.fk_contact
+				WHERE appartenir.fk_group = ' . $gid 
+			)
+			->fetchAll();
+		else
+		$contacts = $bdd->getConnexion()->query('SELECT * FROM contacts;')->fetchAll();
+
+
+
 	$groups = $bdd->getConnexion()->query('SELECT * FROM groupes;')->fetchAll();
 
 
@@ -182,7 +197,11 @@
 			<?php foreach( $groups as $g ): ?>
 			<tr>
 				<td><?=$g['id'] ?></td>
-				<td><?=$g['nom'] ?></td>
+				<td>
+					<a href="index.php?idgroup=<?=$g['id'] ?>">
+						<?=$g['nom'] ?>
+					</a>
+				</td>
 			</tr>
 			<?php endforeach; ?>
 
